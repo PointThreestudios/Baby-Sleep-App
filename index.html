@@ -3,212 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baby Sleep Planner</title>
+    <title>Dynamic Baby Nap Planner</title>
     <style>
+        :root {
+            --primary: #6c5ce7;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #2d3436;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            padding: 20px;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
             margin: 0;
-            display: flex;
-            justify-content: center;
+            padding: 20px;
         }
         .container {
-            background: white;
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--card-bg);
             padding: 25px;
             border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            max-width: 400px;
-            width: 100%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
-        h1 {
-            font-size: 24px;
-            color: #2c3e50;
-            margin-top: 0;
-            text-align: center;
+        h1 { text-align: center; color: var(--primary); margin-top: 0; }
+        .form-group {
             margin-bottom: 20px;
         }
         label {
-            font-weight: 600;
             display: block;
-            margin: 15px 0 5px;
-            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
-        input, select {
+        select, input {
             width: 100%;
             padding: 12px;
-            border: 1px solid #cbd5e1;
+            border: 2px solid #e2e8f0;
             border-radius: 8px;
+            font-size: 16px;
             box-sizing: border-box;
-            font-size: 16px;
-            background-color: #fff;
         }
-        button {
-            width: 100%;
-            background-color: #3182ce;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 16px;
+        select:focus, input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        .timeline {
+            margin-top: 30px;
+            border-left: 4px solid #e2e8f0;
+            padding-left: 20px;
+            position: relative;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border: 4px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+        .time-badge {
             font-weight: bold;
-            margin-top: 25px;
-            cursor: pointer;
-            transition: background 0.2s;
+            color: var(--primary);
+            font-size: 1.1em;
         }
-        button:hover {
-            background-color: #2b6cb0;
-        }
-        .schedule-table {
-            margin-top: 25px;
-            width: 100%;
-            border-collapse: collapse;
-            display: none;
-        }
-        .schedule-table th, .schedule-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .schedule-table th {
-            background-color: #ebf8ff;
-            color: #2b6cb0;
-        }
-        .tip {
-            margin-top: 15px;
-            padding: 12px;
-            background-color: #fffaf0;
-            border-left: 4px solid #dd6b20;
-            border-radius: 4px;
+        .nap-modifier {
+            display: inline-block;
+            width: auto;
+            padding: 4px 8px;
+            margin-left: 10px;
             font-size: 14px;
-            display: none;
-            line-height: 1.4;
+        }
+        .alert {
+            background-color: #ffeaa7;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>👶 Baby Sleep Planner</h1>
+    <h1>👶 Nap Planner</h1>
     
-    <label for="babyAge">Baby's Age:</label>
-    <select id="babyAge" onchange="handleAgeChange()">
-        <option value="4-6">4 - 6 Months (3 Naps)</option>
-        <option value="7-9" selected>7 - 9 Months (2 Naps)</option>
-        <option value="10-12">10 - 12 Months (2 Naps)</option>
-        <option value="13-18">13 - 18 Months (1 Nap transition)</option>
-    </select>
+    <div class="form-group">
+        <label for="ageRange">Baby's Age Range:</label>
+        <select id="ageRange">
+            <option value="4-6">4 - 6 Months (3 Naps)</option>
+            <option value="6-9" selected>6 - 9 Months (2-3 Naps - *8 Months*)</option>
+            <option value="9-12">9 - 12 Months (2 Naps)</option>
+            <option value="12-18">12 - 18 Months (1-2 Naps)</option>
+        </select>
+    </div>
 
-    <label for="nap1End">When did the first nap end?</label>
-    <input type="time" id="nap1End" value="09:50">
+    <div class="form-group">
+        <label for="wakeTime">Morning Wake Up Time:</label>
+        <input type="time" id="wakeTime" value="07:00">
+    </div>
 
-    <button onclick="calculateSchedule()">Generate Schedule</button>
+    <hr style="border: 0; border-top: 2px solid #e2e8f0; margin: 25px 0;">
 
-    <table class="schedule-table" id="scheduleTable">
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Event</th>
-            </tr>
-        </thead>
-        <tbody id="scheduleBody">
-        </tbody>
-    </table>
-
-    <div class="tip" id="sleepTip"></div>
+    <div id="scheduleOutput">
+        <!-- Generated Timeline Renders Here -->
+    </div>
 </div>
 
 <script>
-    function parseTime(timeStr) {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        const date = new Date();
-        date.setHours(hours, minutes, 0, 0);
-        return date;
+    // Configuration data for age-based wake windows (in minutes)
+    const ageConfigs = {
+        "4-6": { windows: [120, 135, 135, 150], defaultNap: 60, maxNaps: 3 },
+        "6-9": { windows: [150, 180, 180, 180], defaultNap: 75, maxNaps: 3 }, // 8 month tier
+        "9-12": { windows: [180, 210, 240], defaultNap: 90, maxNaps: 2 },
+        "12-18": { windows: [240, 270], defaultNap: 120, maxNaps: 1 }
+    };
+
+    // State object to hold overridden nap lengths
+    let actualNapLengths = {};
+
+    const ageSelect = document.getElementById('ageRange');
+    const wakeInput = document.getElementById('wakeTime');
+    const outputDiv = document.getElementById('scheduleOutput');
+
+    // Helper to format minutes from midnight to HH:MM AM/PM
+    function formatTime(totalMinutes) {
+        let mins = totalMinutes % 1440;
+        let hours = Math.floor(mins / 60);
+        let m = mins % 60;
+        let ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // 0 should be 12
+        return `${hours}:${m.toString().padStart(2, '0')} ${ampm}`;
     }
 
-    function formatTime(date) {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    // Helper to parse "HH:MM" into total minutes from midnight
+    function parseTimeToMinutes(timeString) {
+        const [h, m] = timeString.split(':').map(Number);
+        return (h * 60) + m;
     }
 
-    function addMinutes(date, minutes) {
-        return new Date(date.getTime() + minutes * 60000);
-    }
-
-    function handleAgeChange() {
-        // Clear old results when age updates to avoid confusion
-        document.getElementById('scheduleTable').style.display = 'none';
-        document.getElementById('sleepTip').style.display = 'none';
-    }
-
-    function calculateSchedule() {
-        const nap1EndStr = document.getElementById('nap1End').value;
-        if (!nap1EndStr) return;
-
-        const nap1End = parseTime(nap1EndStr);
-        const ageGroup = document.getElementById('babyAge').value;
+    function generateSchedule() {
+        const age = ageSelect.value;
+        const config = ageConfigs[age];
+        let currentTime = parseTimeToMinutes(wakeInput.value);
         
-        let htmlRows = `<tr><td><b>${formatTime(nap1End)}</b></td><td>Wake up from Nap 1</td></tr>`;
-        let tipText = "";
+        let html = `<h3>Daily Plan Timeline</h3><div class="timeline">`;
+        html += `<div class="timeline-item"><span class="time-badge">${formatTime(currentTime)}</span> — ☀️ Good Morning! Wake up.</div>`;
 
-        if (ageGroup === "4-6") {
-            // 3-nap schedule structure
-            const nap2Start = addMinutes(nap1End, 135); // 2.25 hr window
-            const nap2End = addMinutes(nap2Start, 60);   // 1 hr nap
-            const nap3Start = addMinutes(nap2End, 135); // 2.25 hr window
-            const nap3End = addMinutes(nap3Start, 30);   // 30 min catnap
-            const bedtime = addMinutes(nap3End, 150);    // 2.5 hr window before bed
+        let napCount = config.maxNaps;
+        let shortNapDetected = false;
 
-            htmlRows += `
-                <tr><td><b>${formatTime(nap2Start)} - ${formatTime(nap2End)}</b></td><td>🎨 Nap 2 (Aim for 1 hr)</td></tr>
-                <tr><td><b>${formatTime(nap3Start)} - ${formatTime(nap3End)}</b></td><td>🧸 Nap 3 (30 min bridge catnap)</td></tr>
-                <tr><td><b>${formatTime(bedtime)}</b></td><td>🌙 Bedtime</td></tr>
-            `;
-            tipText = "At 4-6 months, keep the last wake window short (around 2.5 hours) and use a brief 30-minute third nap just to bridge the gap to bedtime.";
+        for (let i = 0; i < napCount; i++) {
+            // Fetch configuration wake window
+            let window = config.windows[i] || config.windows[config.windows.length - 1];
+            
+            // Adjust window if the previous nap was exceptionally short (< 45 mins)
+            if (i > 0 && actualNapLengths[i] < 45) {
+                window = Math.max(window - 30, 90); // Shorten wake window by 30 mins, min 1.5h
+                shortNapDetected = true;
+            }
 
-        } else if (ageGroup === "7-9") {
-            // 2-nap schedule structure (Standard 8 month rule)
-            const nap2Start = addMinutes(nap1End, 180); // 3 hr window
-            const nap2End = addMinutes(nap2Start, 90);   // 1.5 hr nap
-            const bedtime = addMinutes(nap2End, 240);    // 4 hr window
+            // Calculate Nap Start
+            currentTime += window;
+            const napStart = currentTime;
 
-            htmlRows += `
-                <tr><td><b>${formatTime(nap2Start)} - ${formatTime(nap2End)}</b></td><td>🎨 Nap 2 (Aim for 1.5 hrs)</td></tr>
-                <tr><td><b>${formatTime(bedtime)}</b></td><td>🌙 Bedtime</td></tr>
-            `;
-            tipText = `If Nap 2 finishes earlier than expected, track a 3.5 to 4-hour window from the actual wake time to set your bedtime. Avoid letting them sleep past 3:30 PM.`;
+            // Fetch actual length or fall back to default setting
+            const napId = i + 1;
+            if (actualNapLengths[napId] === undefined) {
+                actualNapLengths[napId] = config.defaultNap;
+            }
+            const duration = actualNapLengths[napId];
 
-        } else if (ageGroup === "10-12") {
-            // 2-nap mature schedule structure
-            const nap2Start = addMinutes(nap1End, 210); // 3.5 hr window
-            const nap2End = addMinutes(nap2Start, 60);   // 1 hr nap
-            const bedtime = addMinutes(nap2End, 240);    // 4 hr window
+            // Calculate Nap End
+            currentTime += duration;
+            const napEnd = currentTime;
 
-            htmlRows += `
-                <tr><td><b>${formatTime(nap2Start)} - ${formatTime(nap2End)}</b></td><td>🎨 Nap 2 (Aim for 1 hr)</td></tr>
-                <tr><td><b>${formatTime(bedtime)}</b></td><td>🌙 Bedtime</td></tr>
-            `;
-            tipText = "Older babies can handle longer morning wake windows (3.5 hours). Keep bedtime locked at 4 hours after they wake up from their final afternoon nap.";
+            html += `
+            <div class="timeline-item">
+                <span class="time-badge">${formatTime(napStart)} - ${formatTime(napEnd)}</span> — 💤 <strong>Nap ${napId}</strong>
+                <br>
+                <label style="display:inline; font-size:14px; font-weight:normal;">Actual Duration: </label>
+                <input type="number" class="nap-modifier" data-nap="${napId}" value="${duration}" min="0" max="180" style="width:70px; padding:3px;"> mins
+            </div>`;
 
-        } else if (ageGroup === "13-18") {
-            // 1-nap schedule structure
-            const bedtime = addMinutes(nap1End, 300); // 5 hr window after a long midday nap
-
-            htmlRows = `
-                <tr><td><b>${formatTime(nap1End)}</b></td><td>Wake up from the Main Midday Nap</td></tr>
-                <tr><td><b>${formatTime(bedtime)}</b></td><td>🌙 Bedtime</td></tr>
-            `;
-            tipText = "On a 1-nap schedule, that single midday nap ideally needs to be 2 hours long. Aim for a solid 5-hour wake window between waking up from that nap and going to sleep for the night.";
+            // If a 2-nap schedule turns messy due to a tiny short nap, dynamically suggest a bridge catnap
+            if (config.maxNaps === 2 && duration <= 30 && i === 0 && napCount === 2) {
+                napCount = 3; // Dynamically add a 3rd nap block to prevent massive bedtime gap
+            }
         }
 
-        // Render everything to the user screen
-        document.getElementById('scheduleBody').innerHTML = htmlRows;
-        document.getElementById('scheduleTable').style.display = 'table';
-        
-        const tipDiv = document.getElementById('sleepTip');
-        tipDiv.innerHTML = `<strong>💡 Pro-Tip:</strong> ${tipText}`;
-        tipDiv.style.display = 'block';
+        // Final Bedtime calculation
+        let finalWindow = config.windows[napCount] || config.windows[config.windows.length - 1];
+        currentTime += finalWindow;
+
+        html += `<div class="timeline-item"><span class="time-badge">${formatTime(currentTime)}</span> — 🌙 <strong>Bedtime Routine</strong></div>`;
+        html += `</div>`;
+
+        if (shortNapDetected) {
+            html += `<div class="alert">⚠️ <strong>Note:</strong> Subsequent wake windows were compressed due to a short nap to prevent overtiredness.</div>`;
+        }
+
+        outputDiv.html = html; // Wait, layout framework safety assignment:
+        outputDiv.innerHTML = html;
+
+        // Re-attach event listeners to the dynamic input boxes
+        document.querySelectorAll('.nap-modifier').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const napId = e.target.getAttribute('data-nap');
+                actualNapLengths[napId] = parseInt(e.target.value) || 0;
+                generateSchedule();
+            });
+        });
     }
+
+    // Event listeners for base configurations
+    ageSelect.addEventListener('change', () => {
+        actualNapLengths = {}; // reset specific modifications when changing age tiers
+        generateSchedule();
+    });
+    wakeInput.addEventListener('change', generateSchedule);
+
+    // Initial render run
+    generateSchedule();
 </script>
 
 </body>
