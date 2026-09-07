@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Sleep Planner & Tracker</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-top: 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin: 15px 0 5px;
+            color: #4a5568;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background-color: #fff;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        button {
+            flex: 1;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary { background-color: #3182ce; }
+        .btn-primary:hover { background-color: #2b6cb0; }
+        .btn-secondary { background-color: #38a169; display: none; }
+        .btn-secondary:hover { background-color: #2f855a; }
+        
+        .schedule-table {
+            margin-top: 25px;
+            width: 100%;
+            border-collapse: collapse;
+            display: none;
+        }
+        .schedule-table th, .schedule-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .schedule-table th {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+        }
+        .tip {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #fffaf0;
+            border-left: 4px solid #dd6b20;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+            line-height: 1.4;
+        }
+        .log-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-item {
+            background: #f8fafc;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .clear-btn {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+            font-weight: 600;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>👶 Baby Sleep Planner</h1>
+    
+    <label for="babyAge">Baby's Age:</label>
+    <select id="babyAge" onchange="handleAgeChange()">
+        <option value="4-6">4 - 6 Months (3 Naps)</option>
+        <option value="7-9" selected>7 - 9 Months (2 Naps)</option>
+        <option value="10-12">10 - 12 Months (2 Naps)</option>
+        <option value="13-18">13 - 18 Months (1 Nap transition)</option>
+    </select>
+
+    <label for="wakeTime">Morning Wake Up Time:</label>
+    <input type="time" id="wakeTime" value="06:30" onchange="suggestNap1Time()">
+
+    <label for="nap1Start">Nap 1 Start Time Target:</label>
+    <input type="time" id="nap1Start" value="09:00">
+
+    <label for="nap1End">When did Nap 1 actually end?</label>
+    <input type="time" id="nap1End" value="09:50">
+
+    <div class="button-group">
+        <button class="btn-primary" onclick="calculateSchedule()">Generate Plan</button>
+        <button class="btn-secondary" id="saveLogBtn" onclick="saveToLog()">Save Log</button>
+    </div>
+
+    <table class="schedule-table" id="scheduleTable">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Event</th>
+            </tr>
+        </thead>
+        <tbody id="scheduleBody">
+        </tbody>
+    </table>
+
+    <div class="tip" id="sleepTip"></div>
+
+    <h2>📋 Saved Sleep Logs <button class="clear-btn" onclick="clearLogs()">Clear All</button></h2>
+    <div id="logContainer">
+        <ul class="log-list" id="logList"></ul>
+    </div>
+</div>
+
+<script>
+    // Global variable to store current calculated bedtime text for logging
+    let currentCalculatedBedtime = "";
+
+    window.onload = function() {
+        suggestNap1Time();
+        displayLogs();
+    };
+
+    function parseTime(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+        return date;
+    }
+
+    function formatTime(date) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    function addMinutes(date, minutes) {
+        return new Date(date.getTime() + minutes * 60000);
+    }
+
+    function suggestNap1Time() {
+        const wakeTimeStr = document.getElementById('wakeTime').value;
+        if (!wakeTimeStr) return;
+        
+        const wakeTime = parseTime(wakeTimeStr);
+        const ageGroup = document.getElementById('babyAge').value;
+        
+        let initialWindow = 180; // Default 3 hours for 7-9 or 10-12 months
+        if (ageGroup === "4-6") initialWindow = 120; // 2 hours
+        if (ageGroup === "13-18") initialWindow = 300; // 5 hours (direct to main nap)
+
+        const suggestedNap1Start = addMinutes(wakeTime, initialWindow);
+        
+        // Helper to format as HH:MM for input box element value
+        const hh = String(suggestedNap1Start.getHours()).padStart(2, '0');
+        const mm = String(suggestedNap1Start.getMinutes()).padStart(2, '0');
+        document.getElementById('nap1Start').value = `${hh}:${mm}`;
+    }
+
+    function handleAgeChange() {
+        document.getElementById('scheduleTable').style.display = 'none';
+        document.getElementById('sleepTip').style.display = 'none';
+        document.getElementById('saveLogBtn').style.display = 'none';
+        suggestNap1Time();
+    }
+
+    function calculateSchedule() {
+        const nap1EndStr = document.getElementById('nap1End').value;
+        if (!nap1EndStr) return;
+
+        const nap1End = parseTime(nap1EndStr);
+        const ageGroup = document.getElementById('babyAge').value;
+        
+        let htmlRows = `<tr><td><b>${formatTime(nap1End)}</b></td><td>Wake up from Nap 1</td></tr>`;
+        let tipText = "";
+
+        if (ageGroup === "4-6") {
+            const nap2Start = addMinutes(nap1End, 135); 
+            const nap2End = addMinutes(nap2Start, 60);   
+            const nap3Start = addMinutes(nap2End, 135); 
+            const nap3End = addMinutes(nap3Start, 30);   
+            const bedtime = addMinutes(nap3End, 150);    
+
+            htmlRows += `
+                <tr><td><b>${formatTime(nap2Start)} - ${formatTime(nap2End)}</b></td><td>🎨 Nap 2 (Aim for 1 hr)</td></tr>
+                <tr><td><b>${formatTime(nap3Start)} - ${formatTime(nap3End)}</b></td><td>🧸 Nap 3 (30 min bridge catnap)</td></tr>
+                <tr><td><b>${formatTime(bedtime)}</b></td><td>🌙 Bedtime</td></tr>
+            `;
+            tipText = "At 4-6 months, keep the last wake window short (around 2.5 hours) and use a brief third nap to bridge the gap to bedtime.";
+            currentCalculatedBedtime = formatTime(bedtime);
+
+        } else if (ageGroup === "7-9") {
+            const nap2Start = addMinutes(nap1End, 180); 
+            const nap2End = addMinutes(nap2Start, 90);   
+            const bedtime = addMinutes(nap2End, 240);    
+
+            htmlRows += `
+                <tr><td><b>${formatTime(nap2Start)} - ${formatTime(nap2End)}</b></td><td>🎨 Nap 2 (Aim for 1.5 hrs)</td></tr>
+                <tr><td><b>${formatTime(bedtime)}</b></td><td>🌙 Bedtime</td></tr>
+            `;
+            tipText = "If Nap 2 finishes earlier than expected, track a 4-hour window from the actual wake time to set bedtime. Avoid letting them sleep past 3:30 PM.";
+            currentCalculatedBedtime = formatTime(bedtime);
+
+        } else if (ageGroup === "10-12") {
+            const nap2Start = addMinutes(nap1End, 210); 
+            const nap2End = addMinutes(nap2Start, 60);   
+            const bedtime = addMinutes(nap2End, 240);    
+
+            htmlRows += `
+                <tr><td><b>${formatTime(nap2Start)} - ${formatTime(nap2End)}</b></td><td>🎨 Nap 2 (Aim for 1 hr)</td></tr>
+                <tr><td><b>${formatTime(bedtime)}</b></td><td>🌙 Bedtime</td></tr>
+            `;
+            tipText = "Older babies can handle longer morning wake windows (3.5 hours). Keep bedtime locked at 4 hours after they wake up from their final afternoon nap.";
+            currentCalculatedBedtime = formatTime(bedtime);
+
+        } else if (ageGroup === "13-18") {
+            const bedtime = addMinutes(nap1End, 300); 
+
+            htmlRows = `
+                <tr><td><b>${formatTime(nap1End)}</b></td><td>Wake up from the Main Midday Nap</td></tr>
+                <tr><td><b>${formatTime(bedtime)}</b></td><td>🌙 Bedtime</td></tr>
+            `;
+          
