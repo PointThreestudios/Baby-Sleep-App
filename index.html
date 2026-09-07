@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Baby Nap Planner</title>
+    <title>8-Month Strict 2-Nap Baby Tracker</title>
     <style>
         :root {
             --primary: #6c5ce7;
+            --nap-color: #0984e3;
+            --feed-color: #00b894;
+            --play-color: #fdcb6e;
             --bg: #f8f9fa;
             --card-bg: #ffffff;
             --text: #2d3436;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            line-height: 1.6;
+            line-height: 1.5;
             margin: 0;
             padding: 20px;
         }
@@ -27,213 +30,218 @@
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
-        h1 { text-align: center; color: var(--primary); margin-top: 0; }
-        .form-group {
-            margin-bottom: 20px;
+        h1 { text-align: center; color: var(--primary); margin: 0 0 5px 0; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; font-size: 0.95rem; }
+        
+        .setup-box {
+            background: #f1f2f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
         }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group:last-child { margin-bottom: 0; }
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
         }
         select, input {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #e2e8f0;
             border-radius: 8px;
             font-size: 16px;
             box-sizing: border-box;
+            background: white;
         }
         select:focus, input:focus {
             border-color: var(--primary);
             outline: none;
         }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
         .timeline {
-            margin-top: 30px;
+            margin-top: 25px;
             border-left: 4px solid #e2e8f0;
             padding-left: 20px;
-            position: relative;
         }
         .timeline-item {
             position: relative;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
         }
         .timeline-item::before {
             content: '';
             position: absolute;
             left: -28px;
-            top: 4px;
+            top: 6px;
             width: 12px;
             height: 12px;
-            background: var(--primary);
+            background: #b2bec3;
             border: 4px solid #fff;
             border-radius: 50%;
-            box-shadow: 0 0 0 2px var(--primary);
+            box-shadow: 0 0 0 2px #b2bec3;
         }
-        .time-badge {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 1.1em;
-        }
-        .nap-modifier {
-            display: inline-block;
-            width: auto;
-            padding: 4px 8px;
-            margin-left: 10px;
-            font-size: 14px;
-        }
+        
+        .item-wake::before, .item-bed::before { background: var(--primary); box-shadow: 0 0 0 2px var(--primary); }
+        .item-nap::before { background: var(--nap-color); box-shadow: 0 0 0 2px var(--nap-color); }
+        .item-feed::before { background: var(--feed-color); box-shadow: 0 0 0 2px var(--feed-color); }
+        .item-play::before { background: var(--play-color); box-shadow: 0 0 0 2px var(--play-color); }
+
+        .time-badge { font-weight: bold; font-size: 1rem; }
+        .item-wake .time-badge, .item-bed .time-badge { color: var(--primary); }
+        .item-nap .time-badge { color: var(--nap-color); }
+        .item-feed .time-badge { color: var(--feed-color); }
+        .item-play .time-badge { color: #e17055; }
+
         .alert {
-            background-color: #ffeaa7;
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--nap-color);
             padding: 12px;
             border-radius: 8px;
             margin-top: 15px;
             font-size: 14px;
             font-weight: 500;
+            color: #2c3e50;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>👶 Nap Planner</h1>
+    <h1>👶 Baby Tracker</h1>
+    <div class="subtitle">Strict 2-Nap Schedule (Optimized for 8 Months)</div>
     
-    <div class="form-group">
-        <label for="ageRange">Baby's Age Range:</label>
-        <select id="ageRange">
-            <option value="4-6">4 - 6 Months (3 Naps)</option>
-            <option value="6-9" selected>6 - 9 Months (2-3 Naps - *8 Months*)</option>
-            <option value="9-12">9 - 12 Months (2 Naps)</option>
-            <option value="12-18">12 - 18 Months (1-2 Naps)</option>
-        </select>
+    <div class="setup-box">
+        <div class="form-group">
+            <label for="wakeTime">☀️ Morning Wake Up Time:</label>
+            <input type="time" id="wakeTime" value="07:00">
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="nap1Duration">⏱️ Nap 1 Actual Duration:</label>
+                <select id="nap1Duration">
+                    <option value="30">Short Nap (30 mins)</option>
+                    <option value="45">45 mins</option>
+                    <option value="75" selected>Good Nap (75 mins)</option>
+                    <option value="90">Long Nap (90 mins)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nap2Duration">⏱️ Nap 2 Expected Duration:</label>
+                <select id="nap2Duration">
+                    <option value="30">Short Nap (30 mins)</option>
+                    <option value="45">45 mins</option>
+                    <option value="75" selected>Good Nap (75 mins)</option>
+                    <option value="90">Long Nap (90 mins)</option>
+                </select>
+            </div>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label for="wakeTime">Morning Wake Up Time:</label>
-        <input type="time" id="wakeTime" value="07:00">
-    </div>
-
-    <hr style="border: 0; border-top: 2px solid #e2e8f0; margin: 25px 0;">
-
-    <div id="scheduleOutput">
-        <!-- Generated Timeline Renders Here -->
-    </div>
+    <div id="scheduleOutput"></div>
 </div>
 
 <script>
-    // Configuration data for age-based wake windows (in minutes)
-    const ageConfigs = {
-        "4-6": { windows: [120, 135, 135, 150], defaultNap: 60, maxNaps: 3 },
-        "6-9": { windows: [150, 180, 180, 180], defaultNap: 75, maxNaps: 3 }, // 8 month tier
-        "9-12": { windows: [180, 210, 240], defaultNap: 90, maxNaps: 2 },
-        "12-18": { windows: [240, 270], defaultNap: 120, maxNaps: 1 }
-    };
-
-    // State object to hold overridden nap lengths
-    let actualNapLengths = {};
-
-    const ageSelect = document.getElementById('ageRange');
     const wakeInput = document.getElementById('wakeTime');
+    const nap1Select = document.getElementById('nap1Duration');
+    const nap2Select = document.getElementById('nap2Duration');
     const outputDiv = document.getElementById('scheduleOutput');
 
-    // Helper to format minutes from midnight to HH:MM AM/PM
     function formatTime(totalMinutes) {
         let mins = totalMinutes % 1440;
         let hours = Math.floor(mins / 60);
         let m = mins % 60;
         let ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
-        hours = hours ? hours : 12; // 0 should be 12
+        hours = hours ? hours : 12;
         return `${hours}:${m.toString().padStart(2, '0')} ${ampm}`;
     }
 
-    // Helper to parse "HH:MM" into total minutes from midnight
     function parseTimeToMinutes(timeString) {
         const [h, m] = timeString.split(':').map(Number);
         return (h * 60) + m;
     }
 
     function generateSchedule() {
-        const age = ageSelect.value;
-        const config = ageConfigs[age];
-        let currentTime = parseTimeToMinutes(wakeInput.value);
+        let morningWake = parseTimeToMinutes(wakeInput.value);
+        let nap1Min = parseInt(nap1Select.value);
+        let nap2Min = parseInt(nap2Select.value);
         
-        let html = `<h3>Daily Plan Timeline</h3><div class="timeline">`;
-        html += `<div class="timeline-item"><span class="time-badge">${formatTime(currentTime)}</span> — ☀️ Good Morning! Wake up.</div>`;
+        let timeline = [];
+        let isShortNap1 = nap1Min <= 30;
 
-        let napCount = config.maxNaps;
-        let shortNapDetected = false;
+        // --- CYCLE 1: MORNING ---
+        timeline.push({ time: morningWake, type: 'item-wake', text: '<strong>Morning Wake Up!</strong> Open blinds for natural light.' });
+        timeline.push({ time: morningWake + 15, type: 'item-feed', text: '🥛 <strong>Milk Feed 1</strong>' });
+        timeline.push({ time: morningWake + 60, type: 'item-feed', text: '🥣 <strong>Solids Breakfast</strong> + Highchair play.' });
+        timeline.push({ time: morningWake + 90, type: 'item-play', text: '🌳 <strong>Activity:</strong> Outdoor stroller walk or active floor play.' });
 
-        for (let i = 0; i < napCount; i++) {
-            // Fetch configuration wake window
-            let window = config.windows[i] || config.windows[config.windows.length - 1];
-            
-            // Adjust window if the previous nap was exceptionally short (< 45 mins)
-            if (i > 0 && actualNapLengths[i] < 45) {
-                window = Math.max(window - 30, 90); // Shorten wake window by 30 mins, min 1.5h
-                shortNapDetected = true;
-            }
+        // --- NAP 1 ---
+        // 8-Month Wake Window 1 is a steady 2.5 hours (150 mins)
+        let nap1Start = morningWake + 150; 
+        let nap1End = nap1Start + nap1Min;
+        timeline.push({ time: nap1Start, endTime: nap1End, type: 'item-nap', text: `💤 <strong>Nap 1</strong>` });
 
-            // Calculate Nap Start
-            currentTime += window;
-            const napStart = currentTime;
+        // --- CYCLE 2: MIDDAY ---
+        timeline.push({ time: nap1End + 15, type: 'item-feed', text: '🥛 <strong>Milk Feed 2</strong>' });
+        timeline.push({ time: nap1End + 75, type: 'item-feed', text: '🥣 <strong>Solids Lunch</strong>' });
+        timeline.push({ time: nap1End + 90, type: 'item-play', text: '🧩 <strong>Activity:</strong> Stacking cups, tummy time, or structural toys.' });
 
-            // Fetch actual length or fall back to default setting
-            const napId = i + 1;
-            if (actualNapLengths[napId] === undefined) {
-                actualNapLengths[napId] = config.defaultNap;
-            }
-            const duration = actualNapLengths[napId];
+        // --- NAP 2 ---
+        // Normal Window 2 is 3 hours (180 mins). If Nap 1 was a short 30 min burst, build-up pressure 
+        // means baby can only handle 2.5 hours (150 mins) before Nap 2 to avoid a total meltdown.
+        let window2 = isShortNap1 ? 150 : 180;
+        let nap2Start = nap1End + window2;
+        let nap2End = nap2Start + nap2Min;
+        timeline.push({ time: nap2Start, endTime: nap2End, type: 'item-nap', text: `💤 <strong>Nap 2</strong>` });
 
-            // Calculate Nap End
-            currentTime += duration;
-            const napEnd = currentTime;
+        // --- CYCLE 3: AFTERNOON & EVENING ---
+        timeline.push({ time: nap2End + 15, type: 'item-feed', text: '🥛 <strong>Milk Feed 3</strong>' });
+        timeline.push({ time: nap2End + 60, type: 'item-play', text: '🎵 <strong>Activity:</strong> Low-key floor play or reading books together.' });
 
-            html += `
-            <div class="timeline-item">
-                <span class="time-badge">${formatTime(napStart)} - ${formatTime(napEnd)}</span> — 💤 <strong>Nap ${napId}</strong>
-                <br>
-                <label style="display:inline; font-size:14px; font-weight:normal;">Actual Duration: </label>
-                <input type="number" class="nap-modifier" data-nap="${napId}" value="${duration}" min="0" max="180" style="width:70px; padding:3px;"> mins
-            </div>`;
+        // --- BEDTIME (The Dynamic Adjustment) ---
+        // A normal wake window before bed is 3.5 hours (210 mins).
+        // If Nap 1 was short, we slightly reduce the final window to 3.25 hours (195 mins) 
+        // to naturally bring bedtime earlier without breaking the 2-nap routine.
+        let finalWindow = isShortNap1 ? 195 : 210;
+        let bedtimeStart = nap2End + finalWindow;
 
-            // If a 2-nap schedule turns messy due to a tiny short nap, dynamically suggest a bridge catnap
-            if (config.maxNaps === 2 && duration <= 30 && i === 0 && napCount === 2) {
-                napCount = 3; // Dynamically add a 3rd nap block to prevent massive bedtime gap
-            }
-        }
+        timeline.push({ time: bedtimeStart - 60, type: 'item-feed', text: '🥣 <strong>Solids Dinner</strong>' });
+        timeline.push({ time: bedtimeStart - 30, type: 'item-feed', text: '🥛 <strong>Final Milk Top-up</strong> & Bedtime Routine (Bath, PJs).' });
+        timeline.push({ time: bedtimeStart, type: 'item-bed', text: '🌙 <strong>Bedtime!</strong> Sweet dreams.' });
 
-        // Final Bedtime calculation
-        let finalWindow = config.windows[napCount] || config.windows[config.windows.length - 1];
-        currentTime += finalWindow;
+        // Sort items chronologically
+        timeline.sort((a, b) => a.time - b.time);
 
-        html += `<div class="timeline-item"><span class="time-badge">${formatTime(currentTime)}</span> — 🌙 <strong>Bedtime Routine</strong></div>`;
+        // Build HTML output
+        let html = `<h3>Updated 2-Nap Schedule Timeline</h3><div class="timeline">`;
+        timeline.forEach(item => {
+            let displayTime = formatTime(item.time);
+            if (item.endTime) displayTime += ` - ${formatTime(item.endTime)}`;
+            html += `<div class="timeline-item ${item.type}"><span class="time-badge">${displayTime}</span> — ${item.text}</div>`;
+        });
         html += `</div>`;
 
-        if (shortNapDetected) {
-            html += `<div class="alert">⚠️ <strong>Note:</strong> Subsequent wake windows were compressed due to a short nap to prevent overtiredness.</div>`;
+        if (isShortNap1) {
+            html += `<div class="alert">🔄 <strong>8-Month Nap Strategy Adjusted:</strong> Nap 1 was short, so the tracker has safely shortened wake windows and pulled bedtime earlier to keep your baby rested without using a 3rd nap.</div>`;
         }
 
-        outputDiv.html = html; // Wait, layout framework safety assignment:
         outputDiv.innerHTML = html;
-
-        // Re-attach event listeners to the dynamic input boxes
-        document.querySelectorAll('.nap-modifier').forEach(input => {
-            input.addEventListener('change', (e) => {
-                const napId = e.target.getAttribute('data-nap');
-                actualNapLengths[napId] = parseInt(e.target.value) || 0;
-                generateSchedule();
-            });
-        });
     }
 
-    // Event listeners for base configurations
-    ageSelect.addEventListener('change', () => {
-        actualNapLengths = {}; // reset specific modifications when changing age tiers
-        generateSchedule();
-    });
-    wakeInput.addEventListener('change', generateSchedule);
-
-    // Initial render run
+    wakeInput.addEventListener('input', generateSchedule);
+    nap1Select.addEventListener('change', generateSchedule);
+    nap2Select.addEventListener('change', generateSchedule);
     generateSchedule();
 </script>
 
