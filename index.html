@@ -264,77 +264,77 @@
 
         // --- NAP 1 TIME SLOTS ---
         let nap1Start = morningWake + w1; 
-let nap1End = nap1Start + nap1Min;
-timeline.push({ 
-    time: nap1Start, 
-    endTime: nap1End, 
-    type: 'item-nap', 
-    text: `💤 <strong>Nap 1</strong> (${nap1Min} mins)` 
-});
+        let nap1End = nap1Start + nap1Min;
+        timeline.push({ 
+            time: nap1Start, 
+            endTime: nap1End, 
+            type: 'item-nap', 
+            text: `💤 <strong>Nap 1</strong> (${nap1Min} mins)` 
+        });
 
-let currentAnchorTime = nap1End;
+        let currentAnchorTime = nap1End;
 
-if (!isSingleNapAge) {
-    // --- MIDDAY TRACK (2 NAPS SYSTEMS) ---
-    timeline.push({ time: nap1End + 15, type: 'item-feed', text: '🥛 Milk Feed 2' });
-    timeline.push({ time: nap1End + 75, type: 'item-feed', text: '🥣 Solids Lunch' });
+        if (!isSingleNapAge) {
+            // --- MIDDAY TRACK (2 NAPS SYSTEMS) ---
+            timeline.push({ time: nap1End + 15, type: 'item-feed', text: '🥛 Milk Feed 2' });
+            timeline.push({ time: nap1End + 75, type: 'item-feed', text: '🥣 Solids Lunch' });
 
-    // Recalculate window 2 if short nap compression rule sets in
-    let processedW2 = isShortNap1 ? Math.max(w2 - 30, 90) : w2;
-    let nap2Start = nap1End + processedW2;
-    let nap2End = nap2Start + nap2Min;
+            // Recalculate window 2 if short nap compression rule sets in
+            let processedW2 = isShortNap1 ? Math.max(w2 - 30, 90) : w2;
+            let nap2Start = nap1End + processedW2;
+            let nap2End = nap2Start + nap2Min;
 
-    timeline.push({ time: nap2Start - 45, type: 'item-play', text: '🧩 Activity: Stacking toys or indoor floor sensory patterns.' });
-    timeline.push({ 
-        time: nap2Start, 
-        endTime: nap2End, 
-        type: 'item-nap', 
-        text: `💤 <strong>Nap 2</strong> (${nap2Min} mins)` 
-    });
-    timeline.push({ time: nap2End + 15, type: 'item-feed', text: '🥛 Milk Feed 3' });
-    currentAnchorTime = nap2End;
-} else {
-    // --- MIDDAY TRACK (1 NAP ONLY SYSTEM) ---
-    timeline.push({ time: morningWake + 180, type: 'item-feed', text: '🥣 Solids Lunch' });
-}
+            timeline.push({ time: nap2Start - 45, type: 'item-play', text: '🧩 Activity: Stacking toys or indoor floor sensory patterns.' });
+            timeline.push({ 
+                time: nap2Start, 
+                endTime: nap2End, 
+                type: 'item-nap', 
+                text: `💤 <strong>Nap 2</strong> (${nap2Min} mins)` 
+            });
+            timeline.push({ time: nap2End + 15, type: 'item-feed', text: '🥛 Milk Feed 3' });
+            currentAnchorTime = nap2End;
+        } else {
+            // --- MIDDAY TRACK (1 NAP ONLY SYSTEM) ---
+            timeline.push({ time: morningWake + 180, type: 'item-feed', text: '🥣 Solids Lunch' });
+        }
 
-// --- EVENING / BEDTIME SEQUENCE ---
-let processedWBed = isShortNap1 && !isSingleNapAge ? Math.max(wBed - 15, 120) : wBed;
-let bedtimeStart = currentAnchorTime + processedWBed;
+        // --- EVENING / BEDTIME SEQUENCE ---
+        let processedWBed = isShortNap1 && !isSingleNapAge ? Math.max(wBed - 15, 120) : wBed;
+        let bedtimeStart = currentAnchorTime + processedWBed;
 
-timeline.push({ time: bedtimeStart - 75, type: 'item-play', text: '🎵 Activity: Low-key reading blocks or gentle wind-down music.' });
-timeline.push({ time: bedtimeStart - 60, type: 'item-feed', text: '🥣 Solids Dinner with family.' });
-timeline.push({ time: bedtimeStart - 30, type: 'item-feed', text: '🥛 Final Milk Top-up & Bedtime Routine (Warm bath, PJs).' });
-timeline.push({ time: bedtimeStart, type: 'item-bed', text: '🌙 Bedtime Routine Closed! Sleep tight.' });
+        timeline.push({ time: bedtimeStart - 75, type: 'item-play', text: '🎵 Activity: Low-key reading blocks or gentle wind-down music.' });
+        timeline.push({ time: bedtimeStart - 60, type: 'item-feed', text: '🥣 Solids Dinner with family.' });
+        timeline.push({ time: bedtimeStart - 30, type: 'item-feed', text: '🥛 Final Milk Top-up & Bedtime Routine (Warm bath, PJs).' });
+        timeline.push({ time: bedtimeStart, type: 'item-bed', text: '🌙 Bedtime Routine Closed! Sleep tight.' });
 
-// Sort items chronologically
-timeline.sort((a, b) => a.time - b.time);
+        // Sort items chronologically
+        timeline.sort((a, b) => a.time - b.time);
 
-// Build HTML
-let html = `<h3>Customized Plan Timeline</h3><div class="timeline">`;
+        // Build HTML
+        let html = `<h3>Customized Plan Timeline</h3><div class="timeline">`;
 
-timeline.forEach(item => {
-    let displayTime = formatTime(item.time);
-    if (item.endTime) displayTime += ` - ${formatTime(item.endTime)}`;
-    html += `<div class="timeline-item ${item.type}"><span class="time-badge">${displayTime}</span> — ${item.text}</div>`;
-});
+        timeline.forEach(item => {
+            let displayTime = formatTime(item.time);
+            if (item.endTime) displayTime += ` - ${formatTime(item.endTime)}`;
+            html += `<div class="timeline-item ${item.type}"><span class="time-badge">${displayTime}</span> — ${item.text}</div>`;
+        });
 
-html += `</div>`;
+        html += `</div>`;
 
-if (isShortNap1 && !isSingleNapAge) {
-    html += `<div class="alert">🔄 <strong>Adaptive Compression Active:</strong> Nap 1 was short. The application pulled forward subsequent intervals automatically to prevent overtired behavior.</div>`;
-}
+        if (isShortNap1 && !isSingleNapAge) {
+            html += `<div class="alert">🔄 <strong>Adaptive Compression Active:</strong> Nap 1 was short. The application pulled forward subsequent intervals automatically to prevent overtired behavior.</div>`;
+        }
 
-outputDiv.innerHTML = html;
+        outputDiv.innerHTML = html;
+    }
 
-// Interactive event hooks
-[wakeInput, window1Input, window2Input, windowBedInput].forEach(el => el.addEventListener('input', generateSchedule));
-[nap1Select, nap2Select].forEach(el => el.addEventListener('change', generateSchedule));
+    // Interactive event hooks
+    [wakeInput, window1Input, window2Input, windowBedInput].forEach(el => el.addEventListener('input', generateSchedule));
+    [nap1Select, nap2Select].forEach(el => el.addEventListener('change', generateSchedule));
 
-// Initial load call
-generateSchedule();
+    // Initial load call
+    generateSchedule();
 </script>
     
 </body>
 </html>
-
