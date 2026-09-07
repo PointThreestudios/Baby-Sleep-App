@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>8-Month Strict 2-Nap Baby Tracker</title>
+    <title>Adaptive Baby Routine & Nap Planner</title>
     <style>
         :root {
             --primary: #6c5ce7;
@@ -23,7 +23,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
             background: var(--card-bg);
             padding: 25px;
@@ -39,10 +39,19 @@
             border-radius: 12px;
             margin-bottom: 25px;
         }
+        .section-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #747d8c;
+            margin: 15px 0 10px 0;
+            font-weight: bold;
+            border-bottom: 1px solid #ced6e0;
+            padding-bottom: 3px;
+        }
         .form-group {
             margin-bottom: 15px;
         }
-        .form-group:last-child { margin-bottom: 0; }
         label {
             display: block;
             font-weight: 600;
@@ -66,6 +75,11 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
         }
         
         .timeline {
@@ -117,32 +131,60 @@
 <body>
 
 <div class="container">
-    <h1>👶 Baby Tracker</h1>
-    <div class="subtitle">Strict 2-Nap Schedule (Optimized for 8 Months)</div>
+    <h1>👶 Adaptive Baby Tracker</h1>
+    <div class="subtitle">Customizable Naps, Wake Windows, & Growth Settings</div>
     
     <div class="setup-box">
+        <div class="form-group">
+            <label for="ageProfile">👶 Select Age Milestone:</label>
+            <select id="ageProfile">
+                <option value="6-9" selected>6 - 9 Months (Standard 2 Naps - Current)</option>
+                <option value="9-12">9 - 12 Months (Longer Wake Windows)</option>
+                <option value="12-18">12 - 18 Months (Transition to 1 Nap)</option>
+            </select>
+        </div>
+
         <div class="form-group">
             <label for="wakeTime">☀️ Morning Wake Up Time:</label>
             <input type="time" id="wakeTime" value="07:00">
         </div>
 
+        <div class="section-title">⏱️ Step-By-Step Wake Windows (Mins)</div>
+        <div class="grid-3">
+            <div class="form-group">
+                <label for="window1" style="font-size:0.8rem;">Before Nap 1:</label>
+                <input type="number" id="window1" value="180">
+            </div>
+            <div class="form-group">
+                <label for="window2" style="font-size:0.8rem;">Before Nap 2:</label>
+                <input type="number" id="window2" value="180">
+            </div>
+            <div class="form-group">
+                <label for="windowBed" style="font-size:0.8rem;">Before Bedtime:</label>
+                <input type="number" id="windowBed" value="210">
+            </div>
+        </div>
+
+        <div class="section-title">💤 Real-Time Nap Tracker</div>
         <div class="grid-2">
             <div class="form-group">
-                <label for="nap1Duration">⏱️ Nap 1 Actual Duration:</label>
+                <label for="nap1Duration">Nap 1 Duration:</label>
                 <select id="nap1Duration">
                     <option value="30">Short Nap (30 mins)</option>
                     <option value="45">45 mins</option>
-                    <option value="75" selected>Good Nap (75 mins)</option>
-                    <option value="90">Long Nap (90 mins)</option>
+                    <option value="60">60 mins</option>
+                    <option value="90" selected>Target Nap (90 mins)</option>
+                    <option value="120">Long Nap (120 mins)</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="nap2Duration">⏱️ Nap 2 Expected Duration:</label>
+            <div id="nap2Container" class="form-group">
+                <label for="nap2Duration">Nap 2 Duration:</label>
                 <select id="nap2Duration">
                     <option value="30">Short Nap (30 mins)</option>
                     <option value="45">45 mins</option>
-                    <option value="75" selected>Good Nap (75 mins)</option>
-                    <option value="90">Long Nap (90 mins)</option>
+                    <option value="60">60 mins</option>
+                    <option value="90" selected>Target Nap (90 mins)</option>
+                    <option value="120">Long Nap (120 mins)</option>
                 </select>
             </div>
         </div>
@@ -152,10 +194,38 @@
 </div>
 
 <script>
+    // Elements
+    const ageProfile = document.getElementById('ageProfile');
     const wakeInput = document.getElementById('wakeTime');
+    const window1Input = document.getElementById('window1');
+    const window2Input = document.getElementById('window2');
+    const windowBedInput = document.getElementById('windowBed');
     const nap1Select = document.getElementById('nap1Duration');
     const nap2Select = document.getElementById('nap2Duration');
+    const nap2Container = document.getElementById('nap2Container');
     const outputDiv = document.getElementById('scheduleOutput');
+
+    // Default configuration baseline variables per milestone age range
+    const defaults = {
+        "6-9":   { w1: 180, w2: 180, wb: 210, singleNap: false }, // Defaulting windows to 3 hours (180 mins)
+        "9-12":  { w1: 180, w2: 210, wb: 240, singleNap: false },
+        "12-18": { w1: 300, w2: 0,   wb: 240, singleNap: true }
+    };
+
+    // Update settings boxes automatically when age milestone option toggles
+    ageProfile.addEventListener('change', () => {
+        const val = ageProfile.value;
+        window1Input.value = defaults[val].w1;
+        window2Input.value = defaults[val].w2;
+        windowBedInput.value = defaults[val].wb;
+        
+        if (defaults[val].singleNap) {
+            nap2Container.style.display = 'none';
+        } else {
+            nap2Container.style.display = 'block';
+        }
+        generateSchedule();
+    });
 
     function formatTime(totalMinutes) {
         let mins = totalMinutes % 1440;
@@ -177,74 +247,94 @@
         let nap1Min = parseInt(nap1Select.value);
         let nap2Min = parseInt(nap2Select.value);
         
-        let timeline = [];
+        let w1 = parseInt(window1Input.value) || 0;
+        let w2 = parseInt(window2Input.value) || 0;
+        let wBed = parseInt(windowBedInput.value) || 0;
+        
+        let isSingleNapAge = defaults[ageProfile.value].singleNap;
         let isShortNap1 = nap1Min <= 30;
 
-        // --- CYCLE 1: MORNING ---
-        timeline.push({ time: morningWake, type: 'item-wake', text: '<strong>Morning Wake Up!</strong> Open blinds for natural light.' });
+        let timeline = [];
+
+        // --- MORNING BASELINE ---
+        timeline.push({ time: morningWake, type: 'item-wake', text: '<strong>Morning Wake Up!</strong> open window blinds.' });
         timeline.push({ time: morningWake + 15, type: 'item-feed', text: '🥛 <strong>Milk Feed 1</strong>' });
-        timeline.push({ time: morningWake + 60, type: 'item-feed', text: '🥣 <strong>Solids Breakfast</strong> + Highchair play.' });
-        timeline.push({ time: morningWake + 90, type: 'item-play', text: '🌳 <strong>Activity:</strong> Outdoor stroller walk or active floor play.' });
+        timeline.push({ time: morningWake + 60, type: 'item-feed', text: '🥣 <strong>Solids Breakfast</strong> + Structural play.' });
+        timeline.push({ time: morningWake + w1 - 60, type: 'item-play', text: '🌳 <strong>Activity:</strong> Outdoor environment walk or tummy exploration.' });
 
-        // --- NAP 1 ---
-        // 8-Month Wake Window 1 is a steady 2.5 hours (150 mins)
-        let nap1Start = morningWake + 150; 
-        let nap1End = nap1Start + nap1Min;
-        timeline.push({ time: nap1Start, endTime: nap1End, type: 'item-nap', text: `💤 <strong>Nap 1</strong>` });
+        // --- NAP 1 TIME SLOTS ---
+        let nap1Start = morningWake + w1; 
+let nap1End = nap1Start + nap1Min;
+timeline.push({ 
+    time: nap1Start, 
+    endTime: nap1End, 
+    type: 'item-nap', 
+    text: `💤 <strong>Nap 1</strong> (${nap1Min} mins)` 
+});
 
-        // --- CYCLE 2: MIDDAY ---
-        timeline.push({ time: nap1End + 15, type: 'item-feed', text: '🥛 <strong>Milk Feed 2</strong>' });
-        timeline.push({ time: nap1End + 75, type: 'item-feed', text: '🥣 <strong>Solids Lunch</strong>' });
-        timeline.push({ time: nap1End + 90, type: 'item-play', text: '🧩 <strong>Activity:</strong> Stacking cups, tummy time, or structural toys.' });
+let currentAnchorTime = nap1End;
 
-        // --- NAP 2 ---
-        // Normal Window 2 is 3 hours (180 mins). If Nap 1 was a short 30 min burst, build-up pressure 
-        // means baby can only handle 2.5 hours (150 mins) before Nap 2 to avoid a total meltdown.
-        let window2 = isShortNap1 ? 150 : 180;
-        let nap2Start = nap1End + window2;
-        let nap2End = nap2Start + nap2Min;
-        timeline.push({ time: nap2Start, endTime: nap2End, type: 'item-nap', text: `💤 <strong>Nap 2</strong>` });
+if (!isSingleNapAge) {
+    // --- MIDDAY TRACK (2 NAPS SYSTEMS) ---
+    timeline.push({ time: nap1End + 15, type: 'item-feed', text: '🥛 Milk Feed 2' });
+    timeline.push({ time: nap1End + 75, type: 'item-feed', text: '🥣 Solids Lunch' });
 
-        // --- CYCLE 3: AFTERNOON & EVENING ---
-        timeline.push({ time: nap2End + 15, type: 'item-feed', text: '🥛 <strong>Milk Feed 3</strong>' });
-        timeline.push({ time: nap2End + 60, type: 'item-play', text: '🎵 <strong>Activity:</strong> Low-key floor play or reading books together.' });
+    // Recalculate window 2 if short nap compression rule sets in
+    let processedW2 = isShortNap1 ? Math.max(w2 - 30, 90) : w2;
+    let nap2Start = nap1End + processedW2;
+    let nap2End = nap2Start + nap2Min;
 
-        // --- BEDTIME (The Dynamic Adjustment) ---
-        // A normal wake window before bed is 3.5 hours (210 mins).
-        // If Nap 1 was short, we slightly reduce the final window to 3.25 hours (195 mins) 
-        // to naturally bring bedtime earlier without breaking the 2-nap routine.
-        let finalWindow = isShortNap1 ? 195 : 210;
-        let bedtimeStart = nap2End + finalWindow;
+    timeline.push({ time: nap2Start - 45, type: 'item-play', text: '🧩 Activity: Stacking toys or indoor floor sensory patterns.' });
+    timeline.push({ 
+        time: nap2Start, 
+        endTime: nap2End, 
+        type: 'item-nap', 
+        text: `💤 <strong>Nap 2</strong> (${nap2Min} mins)` 
+    });
+    timeline.push({ time: nap2End + 15, type: 'item-feed', text: '🥛 Milk Feed 3' });
+    currentAnchorTime = nap2End;
+} else {
+    // --- MIDDAY TRACK (1 NAP ONLY SYSTEM) ---
+    timeline.push({ time: morningWake + 180, type: 'item-feed', text: '🥣 Solids Lunch' });
+}
 
-        timeline.push({ time: bedtimeStart - 60, type: 'item-feed', text: '🥣 <strong>Solids Dinner</strong>' });
-        timeline.push({ time: bedtimeStart - 30, type: 'item-feed', text: '🥛 <strong>Final Milk Top-up</strong> & Bedtime Routine (Bath, PJs).' });
-        timeline.push({ time: bedtimeStart, type: 'item-bed', text: '🌙 <strong>Bedtime!</strong> Sweet dreams.' });
+// --- EVENING / BEDTIME SEQUENCE ---
+let processedWBed = isShortNap1 && !isSingleNapAge ? Math.max(wBed - 15, 120) : wBed;
+let bedtimeStart = currentAnchorTime + processedWBed;
 
-        // Sort items chronologically
-        timeline.sort((a, b) => a.time - b.time);
+timeline.push({ time: bedtimeStart - 75, type: 'item-play', text: '🎵 Activity: Low-key reading blocks or gentle wind-down music.' });
+timeline.push({ time: bedtimeStart - 60, type: 'item-feed', text: '🥣 Solids Dinner with family.' });
+timeline.push({ time: bedtimeStart - 30, type: 'item-feed', text: '🥛 Final Milk Top-up & Bedtime Routine (Warm bath, PJs).' });
+timeline.push({ time: bedtimeStart, type: 'item-bed', text: '🌙 Bedtime Routine Closed! Sleep tight.' });
 
-        // Build HTML output
-        let html = `<h3>Updated 2-Nap Schedule Timeline</h3><div class="timeline">`;
-        timeline.forEach(item => {
-            let displayTime = formatTime(item.time);
-            if (item.endTime) displayTime += ` - ${formatTime(item.endTime)}`;
-            html += `<div class="timeline-item ${item.type}"><span class="time-badge">${displayTime}</span> — ${item.text}</div>`;
-        });
-        html += `</div>`;
+// Sort items chronologically
+timeline.sort((a, b) => a.time - b.time);
 
-        if (isShortNap1) {
-            html += `<div class="alert">🔄 <strong>8-Month Nap Strategy Adjusted:</strong> Nap 1 was short, so the tracker has safely shortened wake windows and pulled bedtime earlier to keep your baby rested without using a 3rd nap.</div>`;
-        }
+// Build HTML
+let html = `<h3>Customized Plan Timeline</h3><div class="timeline">`;
 
-        outputDiv.innerHTML = html;
-    }
+timeline.forEach(item => {
+    let displayTime = formatTime(item.time);
+    if (item.endTime) displayTime += ` - ${formatTime(item.endTime)}`;
+    html += `<div class="timeline-item ${item.type}"><span class="time-badge">${displayTime}</span> — ${item.text}</div>`;
+});
 
-    wakeInput.addEventListener('input', generateSchedule);
-    nap1Select.addEventListener('change', generateSchedule);
-    nap2Select.addEventListener('change', generateSchedule);
-    generateSchedule();
+html += `</div>`;
+
+if (isShortNap1 && !isSingleNapAge) {
+    html += `<div class="alert">🔄 <strong>Adaptive Compression Active:</strong> Nap 1 was short. The application pulled forward subsequent intervals automatically to prevent overtired behavior.</div>`;
+}
+
+outputDiv.innerHTML = html;
+
+// Interactive event hooks
+[wakeInput, window1Input, window2Input, windowBedInput].forEach(el => el.addEventListener('input', generateSchedule));
+[nap1Select, nap2Select].forEach(el => el.addEventListener('change', generateSchedule));
+
+// Initial load call
+generateSchedule();
 </script>
-
+    
 </body>
 </html>
 
